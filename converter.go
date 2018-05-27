@@ -1,7 +1,6 @@
 package mapDrawer
 
 import (
-	"fmt"
 	"image"
 	"image/draw"
 	"image/png"
@@ -110,7 +109,7 @@ func (c *Converter) set(w int, h int, maxZoom uint8, margin int) {
 }
 
 func (c *Converter) draw(do []drawerObject, w io.Writer) {
-	tx, px := divmod(c.TilePixelX, 256)
+	/*tx, px := divmod(c.TilePixelX, 256)
 	ty, py := divmod(c.TilePixelY, 256)
 	chanTile := make(chan *tileImage)
 	tl := make([]*tileImage, 0)
@@ -156,7 +155,8 @@ func (c *Converter) draw(do []drawerObject, w io.Writer) {
 	downloadTiles(tl, chanTile)
 	for ct := range chanTile {
 		draw.Draw(c.Img, image.Rect(ct.Dx, ct.Dy, ct.W+ct.Dx, ct.H+ct.Dy), ct.Image, image.Point{ct.X, ct.Y}, draw.Src)
-	}
+	}*/
+
 	for _, d := range do {
 		d.Draw(c)
 	}
