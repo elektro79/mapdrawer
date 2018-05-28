@@ -1,7 +1,8 @@
 package mapDrawer
 
 import (
-	"io"
+	"fmt"
+	"image/color"
 
 	"regexp"
 	"strconv"
@@ -12,14 +13,14 @@ import (
 type Drawer struct {
 	width            int
 	height           int
-	drawerObjectList []drawerObject
+	drawerObjectList []DrawerObject
 	margin           int
 	maxZoom          uint8
 	tileDrawer       DrawerTile
 	conversor        Converter
 }
 
-type drawerObject interface {
+type DrawerObject interface {
 	Draw(*Converter)
 	GetLocs() [][2]float64
 }
@@ -28,17 +29,24 @@ type DrawerTile interface {
 	Draw(*Converter)
 }
 
-func NewDrawer() *Drawer {
-	return &Drawer{
-		width:            640,
-		height:           640,
+func NewDrawer(gc draw2d.GraphicContext, w, h, margin int) *Drawer {
+	d := &Drawer{
+		width:            w,
+		height:           h,
 		maxZoom:          18,
+		margin:           margin,
 		tileDrawer:       ImageTileStreetMap(),
-		drawerObjectList: make([]drawerObject, 0),
+		drawerObjectList: make([]DrawerObject, 0),
 	}
+	d.conversor.Gc = gc
+	return d
 }
 
-func (d *Drawer) Add(do drawerObject) {
+func (d *Drawer) GetSize() (int, int) {
+	return d.width, d.height
+}
+
+func (d *Drawer) Add(do DrawerObject) {
 	d.drawerObjectList = append(d.drawerObjectList, do)
 }
 
@@ -46,13 +54,13 @@ func (d *Drawer) SetDrawAreaFromDraw() {
 	d.conversor.setBounds(d.drawerObjectList)
 }
 
-func (d *Drawer) Draw(w io.Writer) {
+func (d *Drawer) Draw() {
 	if d.conversor.Width == 0 {
 		d.SetDrawAreaFromDraw()
 		d.conversor.set(d.width, d.height, d.maxZoom, d.margin)
 	}
 	d.tileDrawer.Draw(&d.conversor)
-	d.conversor.draw(d.drawerObjectList, w)
+	d.conversor.draw(d.drawerObjectList)
 }
 
 func DrawPath(gc draw2d.GraphicContext, d string, scale float64) {
@@ -77,7 +85,6 @@ func DrawPath(gc draw2d.GraphicContext, d string, scale float64) {
 				lx = parseFloat(ld[pos+5], scale)
 				ly = parseFloat(ld[pos+6], scale)
 				gc.CubicCurveTo(
-					//gc.CubicTo(
 					parseFloat(ld[pos+1], scale),
 					parseFloat(ld[pos+2], scale),
 					parseFloat(ld[pos+3], scale),
@@ -129,4 +136,17 @@ func parseFloat(s string, scale float64) float64 {
 		panic(err)
 	}
 	return f * scale
+}
+
+func StringToColor(scol string) (color.Color, error) {
+	format := "#%02x%02x%02x%02x"
+	var r, g, b, a uint8
+	n, err := fmt.Sscanf(scol, format, &r, &g, &b, &a)
+	if err != nil {
+		return nil, err
+	}
+	if n != 4 {
+		return nil, fmt.Errorf("color: %v is not a hex-color alpha", scol)
+	}
+	return color.NRGBA{r, g, b, a}, nil
 }

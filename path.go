@@ -1,7 +1,6 @@
 package mapDrawer
 
 import (
-	"fmt"
 	"image/color"
 	"math"
 
@@ -9,15 +8,20 @@ import (
 )
 
 type Path struct {
-	Color    color.Color
-	Locs     [][2]float64
-	Weight   float64
-	GeoDesic bool
-	Arrow    bool
+	Color    string       `json:"color"`
+	Locs     [][2]float64 `json:"locs"`
+	Weight   float64      `json:"weight"`
+	GeoDesic bool         `json:"geodesic"`
+	Arrow    bool         `json:"arrow"`
 	locs     [][2]float64
 }
 
 func (p *Path) Draw(c *Converter) {
+	var col color.Color
+	var err error
+	if col, err = StringToColor(p.Color); err != nil {
+		col = color.Black
+	}
 	gc := c.Gc
 	gc.SetLineWidth(p.Weight)
 	gc.SetLineCap(draw2d.RoundCap)
@@ -31,11 +35,10 @@ func (p *Path) Draw(c *Converter) {
 	gc.MoveTo(x, y)
 	for _, loc := range locs {
 		x, y = c.GetXY(loc)
-		fmt.Println(loc)
 		gc.LineTo(x, y)
 	}
-	gc.SetFillColor(p.Color)
-	gc.SetStrokeColor(p.Color)
+	gc.SetFillColor(col)
+	gc.SetStrokeColor(col)
 	gc.Stroke()
 	if p.Arrow {
 		px, py := c.GetXY(locs[len(locs)-2])
@@ -114,7 +117,6 @@ func (p *Path) genGeodesic2(pend [2]float64) {
 			i += 1.0
 		}
 	}
-	fmt.Println("seg", segments)
 	p.locs = append(p.locs, pend)
 }
 

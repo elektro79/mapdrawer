@@ -1,14 +1,9 @@
 package mapDrawer
 
 import (
-	"image"
-	"image/draw"
-	"image/png"
-	"io"
 	"math"
 
 	"github.com/llgcode/draw2d"
-	"github.com/llgcode/draw2d/draw2dimg"
 )
 
 type Converter struct {
@@ -20,7 +15,6 @@ type Converter struct {
 	MaxLoc     [2]float64
 	Zoom       uint8
 	ntile      int
-	Img        draw.Image
 	Gc         draw2d.GraphicContext
 }
 
@@ -32,7 +26,7 @@ func (c *Converter) GetXY(ll [2]float64) (x, y float64) {
 	return
 }
 
-func (c *Converter) setBounds(do []drawerObject) {
+func (c *Converter) setBounds(do []DrawerObject) {
 	minLoc := [2]float64{0.0, 0.0}
 	maxLoc := [2]float64{0.0, 0.0}
 	first := true
@@ -78,8 +72,6 @@ func dj(lng, mi, ma float64) bool {
 func (c *Converter) set(w int, h int, maxZoom uint8, margin int) {
 	c.Width = w
 	c.Height = h
-	c.Img = image.NewRGBA(image.Rect(0, 0, int(w), int(h)))
-	c.Gc = draw2dimg.NewGraphicContext(c.Img)
 	minX := (c.MinLoc[1] + 180.0) / 360.0
 	latMinr := c.MinLoc[0] * math.Pi / 180
 	minY := (1.0 - math.Log(math.Tan(latMinr)+(1.0/math.Cos(latMinr)))/math.Pi) / 2.0
@@ -108,59 +100,10 @@ func (c *Converter) set(w int, h int, maxZoom uint8, margin int) {
 	}
 }
 
-func (c *Converter) draw(do []drawerObject, w io.Writer) {
-	/*tx, px := divmod(c.TilePixelX, 256)
-	ty, py := divmod(c.TilePixelY, 256)
-	chanTile := make(chan *tileImage)
-	tl := make([]*tileImage, 0)
-	tty := ty
-	hTile := 256 - py
-	iy := py
-	yTile := py
-	my := 0
-	for {
-		ttx := tx
-		wTile := 256 - px
-		ix := px
-		xTile := px
-		mx := 0
-		for {
-			if tty >= 0 && tty < c.ntile {
-				tl = append(tl, &tileImage{Url: fmt.Sprintf("http://bs.tile.openstreetmap.org/%[1]d/%[2]d/%[3]d.png", c.Zoom, ttx%c.ntile, tty),
-					Dx: mx,
-					Dy: my,
-					X:  xTile,
-					Y:  yTile,
-					W:  wTile,
-					H:  hTile})
-			}
-			ttx++
-			ix += 256
-			mx += wTile
-			if mx >= c.Width {
-				break
-			}
-			wTile = min(256, c.Width-mx)
-			xTile = 0
-		}
-		tty++
-		iy += 256
-		my += hTile
-		if my >= c.Height {
-			break
-		}
-		hTile = min(256, c.Height-my)
-		yTile = 0
-	}
-	downloadTiles(tl, chanTile)
-	for ct := range chanTile {
-		draw.Draw(c.Img, image.Rect(ct.Dx, ct.Dy, ct.W+ct.Dx, ct.H+ct.Dy), ct.Image, image.Point{ct.X, ct.Y}, draw.Src)
-	}*/
-
+func (c *Converter) draw(do []DrawerObject) {
 	for _, d := range do {
 		d.Draw(c)
 	}
-	png.Encode(w, c.Img)
 }
 
 func divmod(numerator, denominator int) (quotient, remainder int) {
