@@ -85,7 +85,7 @@ func (c *Converter) set(w int, h int, maxZoom uint8, margin int) {
 		latMaxr := c.MaxLoc[0] * math.Pi / 180
 		dy := ((1.0 - math.Log(math.Tan(latMaxr)+(1.0/math.Cos(latMaxr)))/math.Pi) / 2.0) - minY
 		dx := ((c.MaxLoc[1] + 180.0) / 360.0) - minX
-		for zoom := maxZoom; zoom >= 1; zoom-- {
+		for zoom := maxZoom; zoom >= 0; zoom-- {
 			npx := float64(uint(1)<<uint(zoom)) * 256.0
 			tw := int(npx*dx) + margin
 			th := int(npx*dy) + margin
@@ -95,7 +95,14 @@ func (c *Converter) set(w int, h int, maxZoom uint8, margin int) {
 				c.Zoom = zoom
 				c.ntile = int(uint(1) << uint(c.Zoom))
 				return
+			} else if int(npx) <= w {
+				c.TilePixelX = 0
+				c.TilePixelY = int(minY*npx) - ((h - th) / 2)
+				c.Zoom = zoom
+				c.ntile = int(uint(1) << uint(c.Zoom))
+				return
 			}
+
 		}
 	}
 }
@@ -124,6 +131,15 @@ func min(x, y int) int {
 //math.Mod return negative? WTF
 func mod(n, m float64) float64 {
 	s := math.Mod(n, m)
+	if s < 0 {
+		s += m
+	}
+	return s
+}
+
+//% return negative? WTF
+func modInt(n, m int) int {
+	s := n % m
 	if s < 0 {
 		s += m
 	}

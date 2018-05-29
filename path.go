@@ -33,9 +33,18 @@ func (p *Path) Draw(c *Converter) {
 	}
 	x, y := c.GetXY(locs[0])
 	gc.MoveTo(x, y)
+	px := x
+	dir := 0.0
 	for _, loc := range locs {
 		x, y = c.GetXY(loc)
-		gc.LineTo(x, y)
+		px -= x
+		if dir == 0 || (dir > 0 && px > 0) || (dir < 0 && px < 0) {
+			gc.LineTo(x, y)
+		} else {
+			gc.MoveTo(x, y)
+		}
+		dir = px
+		px = x
 	}
 	gc.SetFillColor(col)
 	gc.SetStrokeColor(col)

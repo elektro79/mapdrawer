@@ -60,7 +60,7 @@ func ImageTileStreetMap() *ImageTile {
 }
 
 func (i *ImageTile) Draw(c *Converter) {
-	tx, px := divmod(c.TilePixelX, 256)
+	tx, px := divmod(modInt(c.TilePixelX, 256*c.ntile), 256)
 	ty, py := divmod(c.TilePixelY, 256)
 	tty := ty
 	hTile := 256 - py
@@ -79,11 +79,11 @@ func (i *ImageTile) Draw(c *Converter) {
 			xTile := px
 			mx := 0
 			for {
-				if tty >= 0 && tty < c.ntile {
+				if tty >= 0 && tty < c.ntile && mx < (256*c.ntile) {
 					cnt++
 					DownloadUrl(&tileImage{
 						imageTile: i,
-						tilex:     ttx % c.ntile,
+						tilex:     modInt(ttx, c.ntile),
 						tiley:     tty,
 						zoom:      c.Zoom,
 						Dx:        mx,
