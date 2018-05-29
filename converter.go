@@ -97,7 +97,7 @@ func (c *Converter) set(w int, h int, maxZoom uint8, margin int) {
 				return
 			} else if int(npx) <= w {
 				c.TilePixelX = 0
-				c.TilePixelY = int(minY*npx) - ((h - th) / 2)
+				c.TilePixelY = 0
 				c.Zoom = zoom
 				c.ntile = int(uint(1) << uint(c.Zoom))
 				return
