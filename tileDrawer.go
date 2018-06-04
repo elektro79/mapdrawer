@@ -56,7 +56,7 @@ type ImageTile struct {
 }
 
 func ImageTileStreetMap() *ImageTile {
-	return &ImageTile{Name: "OSM", Url: "http://%[1]ss.tile.openstreetmap.org/%[2]d/%[3]d/%[4]d.png", Mirror: []string{"a", "b"}}
+	return &ImageTile{Name: "OSM", Url: "http://%[1]s.tile.openstreetmap.org/%[2]d/%[3]d/%[4]d.png", Mirror: []string{"a", "b"}}
 }
 
 func (i *ImageTile) Draw(c *Converter) {
