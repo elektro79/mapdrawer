@@ -46,6 +46,10 @@ func (d *Drawer) GetSize() (int, int) {
 	return d.width, d.height
 }
 
+func (d *Drawer) GetBounds() (float64, float64, float64, float64, uint8) {
+	return d.conversor.MinLoc[0], d.conversor.MinLoc[1], d.conversor.MaxLoc[0], d.conversor.MinLoc[1], d.conversor.Zoom
+}
+
 func (d *Drawer) Add(do DrawerObject) {
 	d.drawerObjectList = append(d.drawerObjectList, do)
 }
