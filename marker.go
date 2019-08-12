@@ -6,15 +6,22 @@ import (
 	"strings"
 
 	"github.com/llgcode/draw2d"
+	"github.com/llgcode/draw2d/draw2dkit"
 )
 
 type Size uint8
+type ShapeType uint8
 
 const (
 	normal Size = iota
 	mid
 	small
 	tiny
+)
+
+const (
+	MarkShape ShapeType = ShapeType(iota)
+	CircleShape
 )
 
 func (s *Size) UnmarshalJSON(b []byte) error {
@@ -38,9 +45,12 @@ var scaleName = []float64{0.05625, 0.046875, 0.034375, 0.0203125}
 
 type Marker struct {
 	Size        Size         `json:"size"`
+	Stroke      float64      `json:stroke`
+	Radius      float64      `json:radius`
 	FillColor   string       `json:"fillcolor"`
 	StrokeColor string       `json:"strokecolor"`
 	Label       string       `json:"label"`
+	Shape       ShapeType    `json:"ShapeType"`
 	Icon        string       `json:"icon"`
 	Locs        [][2]float64 `json:"locs"`
 }
@@ -63,25 +73,30 @@ func (m *Marker) Draw(c *Converter) {
 		gc.SetLineJoin(draw2d.RoundJoin)
 		x, y := c.GetXY(loc)
 		gc.Translate(x, y)
-		scale := float64(c.Height) * scaleName[m.Size]
-		gc.SetLineWidth(1.0)
 		gc.SetFillColor(fillColor)
 		gc.SetStrokeColor(strokeColor)
-		gc.BeginPath()
-		DrawPath(gc, "M 0,0 c -0.02803654,-0.1546784 -0.1030343,-0.2943913 -0.18714392,-0.4232202 -0.0380496,-0.0659319 -0.0841096,-0.13092197 -0.0991292,-0.2077379 -0.0240313,-0.12600324 0.0430562,-0.26152998 0.15360021,-0.31668256 0.12806693,-0.0680249 0.30209377,-0.0219773 0.37729178,0.10779347 0.0570744,0.0910489 0.0580757,0.21516832 0,0.30768233 C 0.19154977,-0.42301088 0.1147496,-0.32756657 0.06568565,-0.2156916 0.03364388,-0.1476666 0.01061386,-0.07472286 -0.00340441,0 Z", scale)
-		gc.FillStroke()
-		if m.Label != "" {
-			gc.BeginPath()
-			gc.SetFillColor(color.Black)
-			gc.SetFontSize(393.846153846 * scaleName[m.Size])
-			_, top, right, _ := gc.GetStringBounds(m.Label[0:1])
-			gc.FillStringAt(m.Label[0:1], -(right / 2), (-0.71672547*scale)-(top/2))
-
-		} else {
-			gc.BeginPath()
-			gc.SetFillColor(strokeColor)
-			gc.ArcTo(0.0, -0.71672547*scale, 0.10*scale, 0.10*scale, 0.0, 2*math.Pi)
+		gc.SetLineWidth(m.Stroke)
+		if m.Shape == CircleShape {
+			draw2dkit.Circle(gc, 0, 0, m.Radius)
 			gc.FillStroke()
+		} else {
+			scale := float64(c.Height) * scaleName[m.Size]
+			gc.BeginPath()
+			DrawPath(gc, "M 0,0 c -0.02803654,-0.1546784 -0.1030343,-0.2943913 -0.18714392,-0.4232202 -0.0380496,-0.0659319 -0.0841096,-0.13092197 -0.0991292,-0.2077379 -0.0240313,-0.12600324 0.0430562,-0.26152998 0.15360021,-0.31668256 0.12806693,-0.0680249 0.30209377,-0.0219773 0.37729178,0.10779347 0.0570744,0.0910489 0.0580757,0.21516832 0,0.30768233 C 0.19154977,-0.42301088 0.1147496,-0.32756657 0.06568565,-0.2156916 0.03364388,-0.1476666 0.01061386,-0.07472286 -0.00340441,0 Z", scale)
+			gc.FillStroke()
+			if m.Label != "" {
+				gc.BeginPath()
+				gc.SetFillColor(color.Black)
+				gc.SetFontSize(393.846153846 * scaleName[m.Size])
+				_, top, right, _ := gc.GetStringBounds(m.Label[0:1])
+				gc.FillStringAt(m.Label[0:1], -(right / 2), (-0.71672547*scale)-(top/2))
+
+			} else {
+				gc.BeginPath()
+				gc.SetFillColor(strokeColor)
+				gc.ArcTo(0.0, -0.71672547*scale, 0.10*scale, 0.10*scale, 0.0, 2*math.Pi)
+				gc.FillStroke()
+			}
 		}
 		gc.Restore()
 	}
