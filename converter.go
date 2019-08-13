@@ -55,6 +55,18 @@ func (c *Converter) setBounds(do []DrawerObject) {
 	c.MinLoc = minLoc
 	c.MaxLoc = maxLoc
 }
+
+func (c *Converter) getBounds() (float64, float64, float64, float64, uint8) {
+	npx := float64(c.ntile) * 256.0
+	lng1 := float64(c.TilePixelX)*360/npx - 180
+	lng2 := float64(c.TilePixelX+c.Width)*360/npx - 180
+	y1 := 180 - float64(c.TilePixelY)*360/npx
+	y2 := 180 - float64(c.TilePixelY+c.Height)*360/npx
+	lat1 := 360/math.Pi*math.Atan(math.Exp(y1*math.Pi/180)) - 90
+	lat2 := 360/math.Pi*math.Atan(math.Exp(y2*math.Pi/180)) - 90
+	return lat1, lng1, lat2, lng2, c.Zoom
+}
+
 func bj(pd1, pd2 float64) float64 {
 	return mod(360.0+(pd1-pd2), 360.0)
 }
@@ -76,7 +88,7 @@ func (c *Converter) set(w int, h int, maxZoom uint8, margin int) {
 	latMinr := c.MinLoc[0] * math.Pi / 180
 	minY := (1.0 - math.Log(math.Tan(latMinr)+(1.0/math.Cos(latMinr)))/math.Pi) / 2.0
 	if c.MinLoc[0] == c.MaxLoc[0] && c.MinLoc[1] == c.MaxLoc[1] {
-		c.Zoom = 18
+		c.Zoom = maxZoom
 		npx := float64(uint(1)<<uint(c.Zoom)) * 256
 		c.TilePixelX = int((minX * npx) - (float64(w) / 2))
 		c.TilePixelY = int((minY * npx) - (float64(h) / 2))
@@ -92,6 +104,9 @@ func (c *Converter) set(w int, h int, maxZoom uint8, margin int) {
 			if tw < w && th < h {
 				c.TilePixelX = int(minX*npx) - ((w - tw) / 2)
 				c.TilePixelY = int(minY*npx) - ((h - th) / 2)
+				if c.TilePixelY < 0 {
+					c.TilePixelY = 0
+				}
 				c.Zoom = zoom
 				c.ntile = int(uint(1) << uint(c.Zoom))
 				return

@@ -47,7 +47,8 @@ func (d *Drawer) GetSize() (int, int) {
 }
 
 func (d *Drawer) GetBounds() (float64, float64, float64, float64, uint8) {
-	return d.conversor.MinLoc[0], d.conversor.MinLoc[1], d.conversor.MaxLoc[0], d.conversor.MinLoc[1], d.conversor.Zoom
+	lat1, lng1, lat2, lng2, zoom := d.conversor.getBounds()
+	return lat1, lng1, lat2, lng2, zoom
 }
 
 func (d *Drawer) Prepend(do DrawerObject) {
@@ -60,6 +61,7 @@ func (d *Drawer) Add(do DrawerObject) {
 
 func (d *Drawer) SetDrawAreaFromDraw() {
 	d.conversor.setBounds(d.drawerObjectList)
+	d.conversor.set(d.width, d.height, d.maxZoom, d.margin)
 }
 
 func (d *Drawer) Draw() {
