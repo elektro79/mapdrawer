@@ -38,7 +38,7 @@ func (p *Path) Draw(c *Converter) {
 	for _, loc := range locs {
 		x, y = c.GetXY(loc)
 		px -= x
-		if dir == 0 || (dir > 0 && px > 0) || (dir < 0 && px < 0) {
+		if c.Zoom > 2 || dir == 0 || (dir > 0 && px > 0) || (dir < 0 && px < 0) {
 			gc.LineTo(x, y)
 		} else {
 			gc.MoveTo(x, y)
